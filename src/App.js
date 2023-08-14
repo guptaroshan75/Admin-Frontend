@@ -23,9 +23,9 @@ const App = () => {
           </PrivateRoute>
         } />
         <Route path='/products' element={
-          // <PrivateRoute currentUser={currentUser}>
+          <PrivateRoute currentUser={currentUser}>
             <Products />
-          // </PrivateRoute>
+          </PrivateRoute>
         } />
         <Route path='/customers' element={
           <PrivateRoute currentUser={currentUser}>
