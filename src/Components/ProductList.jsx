@@ -80,7 +80,7 @@ const ProductList = ({ products, fetchAllProduct, searchProducts }) => {
                                         <TableCell align="right">{product.productCategory}</TableCell>
                                         <TableCell align="right">{product.price}</TableCell>
                                         <TableCell align="right">{product.salePrice}</TableCell>
-                                        <TableCell align="right">{product.stock}</TableCell>
+                                        <TableCell align="right">{product.productQuantity}</TableCell>
                                         <TableCell align="right">{product.status}</TableCell>
                                         <TableCell align="right">
                                             <Link underline='none' component={RouterLink}
@@ -125,7 +125,7 @@ const ProductList = ({ products, fetchAllProduct, searchProducts }) => {
                                         <TableCell align="right">{product.productCategory}</TableCell>
                                         <TableCell align="right">{product.price}</TableCell>
                                         <TableCell align="right">{product.salePrice}</TableCell>
-                                        <TableCell align="right">{product.stock}</TableCell>
+                                        <TableCell align="right">{product.productQuantity}</TableCell>
                                         <TableCell align="right">{product.status}</TableCell>
                                         <TableCell align="right">
                                             <Link underline='none' component={RouterLink}
