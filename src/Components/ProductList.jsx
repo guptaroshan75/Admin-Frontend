@@ -1,16 +1,51 @@
-import React, { useState } from 'react';
+import React, {useState } from 'react';
 import { Box, Divider, FormControlLabel, Pagination, Switch, Typography, Paper } from '@mui/material';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import EditProduct from './EditProduct';
 import DeleteProduct from './DeletProduct';
+import axios from 'axios';
+import { API } from '../API';
 
+const ProductList = ({ products, fetchAllProduct, searchProducts }) => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
 
-const ProductList = ({ products, fetchAllProduct, handleChangeInput, addProduct }) => {
-    const [invisible, setInvisible] = useState(false);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const visibleProducts = products.slice(startIndex, startIndex + itemsPerPage);
 
-    const handleBadgeVisibility = () => {
-        setInvisible(!invisible);
+    const handlePageChange = (event, newPage) => {
+        setCurrentPage(newPage);
+    };
+
+    const handleBadgeVisibility = async (productId) => {
+        const updatedProducts = products.map(product => {
+            if (product._id === productId) {
+                console.log('inside', product.published);
+                const updatedProduct = {
+                    ...product,
+                    published: product.published,
+                };
+                console.log('Updating visibility:', updatedProduct.published);
+                console.log('Updated Product:', updatedProduct);
+                updateVisibility(productId, updatedProduct.published);
+                return updatedProduct;
+            }
+            return product;
+        });
+        fetchAllProduct(updateVisibility);
+        return updatedProducts;
+    };
+
+    const updateVisibility = async (productId, checked) => {
+        try {
+            const response = await
+                axios.put(`${API}/updateProductVisble/${productId}`, { published: checked });
+            fetchAllProduct()
+            console.log(response.data);
+        } catch (error) {
+            console.error(error.message);
+        }
     };
 
     return (
@@ -20,7 +55,7 @@ const ProductList = ({ products, fetchAllProduct, handleChangeInput, addProduct 
                     <Table sx={{ minWidth: 650 }} aria-label="simple table">
                         <TableHead>
                             <TableRow>
-                                <TableCell component="th" scope="row"> PRODUCT NAME </TableCell>
+                                <TableCell scope="row"> PRODUCT NAME </TableCell>
                                 <TableCell align="right"> CATEGORY </TableCell>
                                 <TableCell align="right"> PRICE </TableCell>
                                 <TableCell align="right"> SALE PRICE </TableCell>
@@ -32,45 +67,98 @@ const ProductList = ({ products, fetchAllProduct, handleChangeInput, addProduct 
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {products.map((product) => (
-                                <TableRow key={product?._id}>
-                                    <TableCell component="th" scope="row">
-                                        {product.productName}
-                                    </TableCell>
-                                    <TableCell align="right">{product.productName}</TableCell>
-                                    <TableCell align="right">{product.price}</TableCell>
-                                    <TableCell align="right">{product.salePrice}</TableCell>
-                                    <TableCell align="right">{product.stock}</TableCell>
-                                    <TableCell align="right">{product.status}</TableCell>
-                                    <TableCell align="right">
-                                        <ZoomInIcon sx={{ fontSize: 30, color: '#9e9e9e' }} />
-                                    </TableCell>
-                                    <TableCell align="right">
-                                        <FormControlLabel
-                                            sx={{ color: 'text.primary' }}
-                                            control={<Switch checked={!invisible} onChange={handleBadgeVisibility} />}
-                                        />
-                                    </TableCell>
-                                    <TableCell align="right">
-                                        <Box display={'flex'} format="" alignItems={'center'}>
-                                            <Typography>
-                                                <EditProduct addProduct={addProduct}
-                                                    handleChangeInput={handleChangeInput}
-                                                />
-                                            </Typography>
-                                            <Typography>
-                                                <DeleteProduct product={product}
-                                                    fetchAllProduct={fetchAllProduct}
-                                                />
-                                            </Typography>
-                                        </Box>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
+                            {searchProducts.length > 0 ? (
+                                searchProducts.map((product) => (
+                                    <TableRow key={product?._id}>
+                                        <TableCell scope="row">
+                                            {product.productName}
+                                        </TableCell>
+                                        <TableCell align="right">{product.productCategory}</TableCell>
+                                        <TableCell align="right">{product.price}</TableCell>
+                                        <TableCell align="right">{product.salePrice}</TableCell>
+                                        <TableCell align="right">{product.stock}</TableCell>
+                                        <TableCell align="right">{product.status}</TableCell>
+                                        <TableCell align="right">
+                                            <ZoomInIcon sx={{ fontSize: 30, color: '#9e9e9e' }} />
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <FormControlLabel
+                                                sx={{ color: 'text.primary' }}
+                                                control={
+                                                    <Switch
+                                                        checked={product.published}
+                                                        onChange={() => handleBadgeVisibility(product._id)}
+                                                    />
+                                                }
+                                            />
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <Box display={'flex'} format="" alignItems={'center'}>
+                                                <Typography>
+                                                    <EditProduct product={product}
+                                                        fetchAllProduct={fetchAllProduct}
+                                                    />
+                                                </Typography>
+                                                <Typography>
+                                                    <DeleteProduct product={product}
+                                                        fetchAllProduct={fetchAllProduct}
+                                                    />
+                                                </Typography>
+                                            </Box>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                visibleProducts.map((product) => (
+                                    <TableRow key={product?._id}>
+                                        <TableCell scope="row">
+                                            {product.productName}
+                                        </TableCell>
+                                        <TableCell align="right">{product.productCategory}</TableCell>
+                                        <TableCell align="right">{product.price}</TableCell>
+                                        <TableCell align="right">{product.salePrice}</TableCell>
+                                        <TableCell align="right">{product.stock}</TableCell>
+                                        <TableCell align="right">{product.status}</TableCell>
+                                        <TableCell align="right">
+                                            <ZoomInIcon sx={{ fontSize: 30, color: '#9e9e9e' }} />
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <FormControlLabel
+                                                sx={{ color: 'text.primary' }}
+                                                control={
+                                                    <Switch
+                                                        checked={product.published}
+                                                        onChange={() => handleBadgeVisibility(product._id)}
+                                                    />
+                                                }
+                                            />
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <Box display={'flex'} format="" alignItems={'center'}>
+                                                <Typography>
+                                                    <EditProduct product={product}
+                                                        fetchAllProduct={fetchAllProduct}
+                                                    />
+                                                </Typography>
+                                                <Typography>
+                                                    <DeleteProduct product={product}
+                                                        fetchAllProduct={fetchAllProduct}
+                                                    />
+                                                </Typography>
+                                            </Box>
+                                        </TableCell>
+                                    </TableRow>
+                                )))
+                            }
                         </TableBody>
                     </Table>
                     <Divider />
-                    <Pagination count={10} />
+
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }} my={2}>
+                        <Pagination count={Math.ceil(products.length / itemsPerPage)}
+                            page={currentPage} onChange={handlePageChange} color="primary"
+                        />
+                    </Box>
                 </TableContainer>
             </Box>
         </>

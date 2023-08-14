@@ -4,12 +4,17 @@ import { AppBar, Toolbar, IconButton, Typography, Slide } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import InputField from "../Pages/InputField";
+import { toast } from 'react-toastify';
+import { API } from '../API';
+import axios from 'axios';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const AddProduct = ({ handleChangeInput, handleAddToProduct, addProduct }) => {
+const AddProduct = ({ handleChangeInput, fetchAllProduct,
+    addProduct, setAddProduct, handleFileUpload
+}) => {
     const [open, setOpen] = useState(false);
 
     const toggeleHandleClick = () => {
@@ -21,6 +26,33 @@ const AddProduct = ({ handleChangeInput, handleAddToProduct, addProduct }) => {
     const handleChange = (event) => {
         setChecked(event.target.checked);
     };
+
+    const handleAddToProduct = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post(`${API}/addProducts`, addProduct);
+            toast.success("Product Creataed Successfully");
+            setAddProduct({
+                myImage: "",
+                productName: '',
+                description: '',
+                productSKU: '',
+                productBarcode: '',
+                productCategory: '',
+                productDefCategory: '',
+                price: '',
+                salePrice: '',
+                productQuantity: '',
+                productSlug: '',
+                productTags: '',
+            });
+            fetchAllProduct();
+            toggeleHandleClick();
+            console.log('Product Added Successfully', response.data);
+        } catch (error) {
+            console.log(error.message);
+        }
+    }
 
     return (
         <Box>
@@ -69,12 +101,15 @@ const AddProduct = ({ handleChangeInput, handleAddToProduct, addProduct }) => {
 
                 <Box sx={{ width: '100%', typography: 'body1' }}>
                     <Box sx={{ mt: 2, mb: 3 }}>
-                        <Typography variant="h5" px={2}
+                        <Typography variant="h4" px={2}
                             sx={{ borderBottom: 1, borderColor: 'divider' }}
                         > Basic Details
                         </Typography>
                     </Box>
-                    <InputField handleChangeInput={handleChangeInput} addProduct={addProduct} />
+                    <InputField handleChangeInput={handleChangeInput}
+                        handleFileUpload={handleFileUpload}
+                        addProduct={addProduct}
+                    />
                 </Box>
 
                 <AppBar sx={{ position: 'relative', bgcolor: 'rgba(0, 0, 0, 0.04)', py: 3 }}>
@@ -88,13 +123,14 @@ const AddProduct = ({ handleChangeInput, handleAddToProduct, addProduct }) => {
                             variant='contained'>Cancel
                         </Button>
 
-                        <Button onClick={handleAddToProduct} sx={{
-                            ml: 2, borderRadius: 3, width: "50%",
-                            height: "73%", backgroundColor: '#37ab4a', '&:hover': {
-                                backgroundColor: '#37ab4a'
-                            }
-                        }}
-                            variant='contained' >Add Product
+                        <Button onClick={handleAddToProduct}
+                            sx={{
+                                ml: 2, borderRadius: 3, width: "50%",
+                                height: "73%", backgroundColor: '#37ab4a', '&:hover': {
+                                    backgroundColor: '#37ab4a'
+                                }
+                            }}
+                            variant='contained'>Add Product
                         </Button>
                     </Toolbar>
                 </AppBar>

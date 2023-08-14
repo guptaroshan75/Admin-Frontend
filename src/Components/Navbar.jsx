@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
 import { styled } from '@mui/material/styles';
-import { Box, Toolbar, CssBaseline, Typography, IconButton, Badge, Avatar, } from '@mui/material';
+import { Box, Toolbar, CssBaseline, Typography, IconButton, Avatar, MenuItem, Tooltip, Menu }
+    from '@mui/material';
 import MuiDrawer from '@mui/material/Drawer';
 import MuiAppBar from '@mui/material/AppBar';
 import MenuIcon from '@mui/icons-material/Menu';
 import DrawerComponent from './DrawerComp';
-import NotificationsIcon from '@mui/icons-material/Notifications';
+import LogoutIcon from '@mui/icons-material/Logout';
+import GridViewIcon from '@mui/icons-material/GridView';
+import SettingsIcon from '@mui/icons-material/Settings';
+import PopupState, { bindTrigger, bindMenu } from 'material-ui-popup-state';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
 const drawerWidth = 240;
 
@@ -79,7 +86,16 @@ const Navbar = () => {
     const toggleDrawer = () => {
         setOpen(!open);
     }
-  
+
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        toast.error('Logout Succesfully', {
+            position: toast.POSITION.TOP_CENTER
+        })
+        navigate("/");
+    };
+
     return (
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
@@ -94,22 +110,40 @@ const Navbar = () => {
                         >
                             <MenuIcon />
                         </IconButton>
-                        <Typography variant="h5" noWrap component="div" sx={{px: 2}}>
+                        <Typography variant="h5" noWrap component="div" sx={{ px: 2 }}>
                             BST
                         </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Badge color="error" badgeContent={6}>
-                            <NotificationsIcon />
-                        </Badge>
-                        <Avatar sx={{ bgcolor: '#f5310f', mx: 2 }}> BST </Avatar>
+                        <PopupState variant="popover" popupId="demo-popup-menu">
+                            {(popupState) => (
+                                <>
+                                    <Tooltip title="Profile Settings">
+                                        <Avatar sx={{ bgcolor: '#f5310f', mx: 2, p: 3 }}
+                                            {...bindTrigger(popupState)}
+                                        >
+                                            BST
+                                        </Avatar>
+                                    </Tooltip>
+                                    <Menu {...bindMenu(popupState)}>
+                                        <MenuItem >
+                                            <GridViewIcon sx={{ mr: 2 }} /> Profile
+                                        </MenuItem>
+                                        <MenuItem >
+                                            <SettingsIcon sx={{ mr: 2 }} /> My account
+                                        </MenuItem>
+                                        <MenuItem onClick={handleLogout}>
+                                            <LogoutIcon sx={{ mr: 2 }} /> Logout
+                                        </MenuItem>
+                                    </Menu>
+                                </>
+                            )}
+                        </PopupState>
                     </Box>
                 </Toolbar>
             </AppBar>
 
-            <DrawerComponent open={open} openedMixin={openedMixin} closedMixin={closedMixin}
-                Drawer={Drawer} DrawerHeader={DrawerHeader}
-            />
+            <DrawerComponent open={open} Drawer={Drawer} DrawerHeader={DrawerHeader} />
             {/* <Box component="main" sx={{ flexGrow: 1, px: 3 }}>
                 <DrawerHeader />
                 <Typography variant="h5"> Dashboard Overview </Typography>

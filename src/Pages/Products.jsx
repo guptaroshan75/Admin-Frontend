@@ -9,7 +9,6 @@ import ProductList from '../Components/ProductList';
 import AddProduct from '../Components/AddProduct'
 import Navbar from '../Components/Navbar';
 import axios from 'axios';
-import { toast } from 'react-toastify';
 import { API } from '../API';
 
 const category = [
@@ -36,17 +35,47 @@ const price = [
 ]
 
 const Products = () => {
+  const [searchProducts, setSearchProducts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentSearchPage, setCurrentSearchPage] = useState(1);
+  const [originalProducts, setOriginalProducts] = useState([]);
+
   const [addProduct, setAddProduct] = useState({
+    myImage: "",
     productName: '',
     description: '',
     productSKU: '',
     productBarcode: '',
+    productCategory: '',
+    productDefCategory: '',
     price: '',
     salePrice: '',
     productQuantity: '',
     productSlug: '',
-    productTags: ''
-  })
+    productTags: '',
+  });
+
+  function convertToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file)
+      reader.onload = () => {
+        resolve(reader.result)
+      }
+      reader.onerror = () => {
+        reject(error)
+      }
+    })
+  }
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0]
+    const base64 = await convertToBase64(file)
+    setAddProduct({
+      ...addProduct,
+      myImage: base64,
+    })
+  }
 
   const handleChangeInput = (e) => {
     setAddProduct({
@@ -55,46 +84,50 @@ const Products = () => {
     });
   };
 
-  const handleAddToProduct = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post(`${API}/addProducts`, addProduct);
-      toast.success("Product Creataed Successfully");
-      setAddProduct({
-        productName: '',
-        description: '',
-        productSKU: '',
-        productBarcode: '',
-        price: '',
-        salePrice: '',
-        productQuantity: '',
-        productSlug: '',
-        productTags: ''
-      });
-      fetchAllProduct();
-      console.log('Product Added Successfully', response.data);
-    } catch (error) {
-      console.log(error.message);
-    }
-  }
-
   const [products, setProducts] = useState([]);
 
   const fetchAllProduct = async () => {
     try {
       const response = await axios.get(`${API}/getAllProducts`);
       setProducts(response.data.data);
+      setProducts(response.data.data);
+      setOriginalProducts(response.data.data);
+      setCurrentPage(1);
     } catch (error) {
       console.log(error);
     }
   };
 
+  const searchAllProduct = async (searchValue) => {
+    try {
+      const response = await axios.get(`${API}/searchProducts/${searchValue}`);
+      const searchResults = response.data.data.filter(product =>
+        product.productName.charAt(0).toLowerCase() === searchValue.charAt(0).toLowerCase()
+      );
+      setSearchProducts(searchResults);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleSearChchange = (e) => {
+    const searchValue = e.target.value
+    if (searchValue === '') {
+      setSearchProducts([])
+      setCurrentPage(currentSearchPage);
+    } else {
+      searchAllProduct(searchValue)
+      setCurrentSearchPage(currentPage)
+    }
+  }
+
   useEffect(() => {
     fetchAllProduct();
+    searchAllProduct()
   }, []);
 
   return (
-    <Box sx={{ flexGrow: 1, px: 3, mt: 10, ml: 30, }} >
+    <Box sx={{ flexGrow: 1, px: 3, mt: 10, ml: 30, mb: 20 }} >
       <Navbar />
       <Typography variant="h5" sx={{ my: 2, fontWeight: 800 }}> Products </Typography>
       <Paper sx={{
@@ -128,7 +161,9 @@ const Products = () => {
           </Button>
           <Button>
             <AddProduct handleChangeInput={handleChangeInput} addProduct={addProduct}
-              handleAddToProduct={handleAddToProduct} />
+              handleFileUpload={handleFileUpload}
+              setAddProduct={setAddProduct} fetchAllProduct={fetchAllProduct}
+            />
           </Button>
         </Box>
       </Paper>
@@ -138,7 +173,9 @@ const Products = () => {
       }}
       >
         <Box sx={{ m: 1 }} size="small">
-          <TextField variant="outlined" sx={{ width: 300 }} placeholder='Search Product' />
+          <TextField variant="outlined" sx={{ width: 300 }} placeholder='Search Product'
+            onChange={handleSearChchange}
+          />
         </Box>
         <Box>
           <Autocomplete disablePortal options={category} sx={{ width: 300 }}
@@ -152,8 +189,8 @@ const Products = () => {
         </Box>
       </Paper>
       <Box my={2}>
-        <ProductList products={products} key={products?.id} fetchAllProduct={fetchAllProduct}
-          handleChangeInput={handleChangeInput} addProduct={addProduct}
+        <ProductList products={products} key={products?.id}
+          searchProducts={searchProducts} fetchAllProduct={fetchAllProduct}
         />
       </Box>
     </Box>

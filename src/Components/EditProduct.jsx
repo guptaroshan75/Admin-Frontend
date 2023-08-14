@@ -4,7 +4,7 @@ import { AppBar, Toolbar, IconButton, Typography, Slide } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import CloseIcon from '@mui/icons-material/Close';
 import EditNoteIcon from '@mui/icons-material/EditNote';
-import InputField from "../Pages/InputField";
+import EditInputField from "../Pages/EditInputField";
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { API } from '../API';
@@ -13,17 +13,47 @@ const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const EditProduct = ({ handleChangeInput, addProduct }) => {
-    const handleEditProduct = async (e) => {
-        e.preventDefault();
-        console.log(addProduct);
+const EditProduct = ({ product, fetchAllProduct }) => {
+    const [editProduct, setEditProduct] = useState(product);
+
+    const handleChangeInput = (e) => {
+        setEditProduct({
+            ...editProduct,
+            [e.target.name]: e.target.value,
+        });
+    };
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0]
+        const base64 = await convertToBase64(file)
+        setEditProduct({
+            ...editProduct,
+            myImage: base64,
+        })
+    }
+
+    function convertToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file)
+            reader.onload = () => {
+                resolve(reader.result)
+            }
+            reader.onerror = () => {
+                reject(error)
+            }
+        })
+    }
+
+    const handleUpdateProduct = async (_id) => {
         try {
-            const response = await
-                axios.put(`${API}/updateProduct`, addProduct);
-            toast.success("Product Creataed Successfully");
-            console.log('Product Added Successfully', response.data);
+            await axios.put(`${API}/updateProduct/${_id}`, editProduct);
+            toast.success("Product updated Successfully");
+            fetchAllProduct();
+            toggeleHandleClick();
+            console.log('Product updated Successfully');
         } catch (error) {
-            console.log(error.message);
+            console.log(error);
         }
     }
 
@@ -38,7 +68,6 @@ const EditProduct = ({ handleChangeInput, addProduct }) => {
     const handleChangeValue = (event, newValue) => {
         setValue(newValue);
     };
-
 
     const [checked, setChecked] = useState(false);
 
@@ -62,7 +91,7 @@ const EditProduct = ({ handleChangeInput, addProduct }) => {
                 <AppBar sx={{ position: 'relative', bgcolor: 'rgba(0, 0, 0, 0.04)', py: 2 }}>
                     <Toolbar sx={{ justifyContent: 'space-between' }}>
                         <Box>
-                            <Typography sx={{ ml: 2, flex: 1, color: ' black' }} variant="h5" >
+                            <Typography sx={{ ml: 2, flex: 1, color: ' black' }} variant={"h5"} >
                                 Update Products
                             </Typography>
                             <Typography sx={{ ml: 2, flex: 1, color: ' black' }} >
@@ -101,8 +130,8 @@ const EditProduct = ({ handleChangeInput, addProduct }) => {
                             </TabList>
                         </Box>
                         <TabPanel value="1">
-                            <InputField handleChangeInput={handleChangeInput}
-                                addProduct={addProduct}
+                            <EditInputField handleChangeInput={handleChangeInput}
+                                editProduct={editProduct} handleFileUpload={handleFileUpload}
                             />
                         </TabPanel>
 
@@ -119,10 +148,10 @@ const EditProduct = ({ handleChangeInput, addProduct }) => {
                             variant='contained'>Cancel
                         </Button>
 
-                        <Button onClick={handleEditProduct} sx={{
-                            ml: 2, borderRadius: 3, width: "50%",
-                            height: "73%", backgroundColor: '#37ab4a', '&:hover': {
-                                backgroundColor: '#37ab4a'
+                        <Button onClick={() => handleUpdateProduct(product?._id)} sx={{
+                            ml: 2, borderRadius: 3, width: "50%", color: 'black',
+                            height: "73%", backgroundColor: '#fffb0a', '&:hover': {
+                                backgroundColor: '#f7f554'
                             }
                         }}
                             variant='contained' >Update Product
