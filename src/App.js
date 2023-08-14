@@ -8,6 +8,7 @@ import Order from './Pages/Order';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import PrivateRoute from './Components/PrivateRoute'
+import SingleProductPage from './Pages/SingleProductPage'
 
 const App = () => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -23,9 +24,9 @@ const App = () => {
           </PrivateRoute>
         } />
         <Route path='/products' element={
-          <PrivateRoute currentUser={currentUser}>
-            <Products />
-          </PrivateRoute>
+          // <PrivateRoute currentUser={currentUser}>
+          <Products />
+          /* </PrivateRoute> */
         } />
         <Route path='/customers' element={
           <PrivateRoute currentUser={currentUser}>
@@ -37,6 +38,7 @@ const App = () => {
             <Order />
           </PrivateRoute>
         } />
+        <Route path='/singleProduct/:id' element={<SingleProductPage />} />
       </Routes>
     </>
   )

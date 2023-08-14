@@ -1,11 +1,13 @@
-import React, {useState } from 'react';
+import React, { useState } from 'react';
 import { Box, Divider, FormControlLabel, Pagination, Switch, Typography, Paper } from '@mui/material';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Link } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import EditProduct from './EditProduct';
 import DeleteProduct from './DeletProduct';
 import axios from 'axios';
 import { API } from '../API';
+import { toast } from 'react-toastify';
+import { Link as RouterLink } from 'react-router-dom';
 
 const ProductList = ({ products, fetchAllProduct, searchProducts }) => {
     const [currentPage, setCurrentPage] = useState(1);
@@ -42,6 +44,7 @@ const ProductList = ({ products, fetchAllProduct, searchProducts }) => {
             const response = await
                 axios.put(`${API}/updateProductVisble/${productId}`, { published: checked });
             fetchAllProduct()
+            toast.success("Product Visibility In DataBase");
             console.log(response.data);
         } catch (error) {
             console.error(error.message);
@@ -70,6 +73,7 @@ const ProductList = ({ products, fetchAllProduct, searchProducts }) => {
                             {searchProducts.length > 0 ? (
                                 searchProducts.map((product) => (
                                     <TableRow key={product?._id}>
+                                        {console.log(product?._id)}
                                         <TableCell scope="row">
                                             {product.productName}
                                         </TableCell>
@@ -79,7 +83,11 @@ const ProductList = ({ products, fetchAllProduct, searchProducts }) => {
                                         <TableCell align="right">{product.stock}</TableCell>
                                         <TableCell align="right">{product.status}</TableCell>
                                         <TableCell align="right">
-                                            <ZoomInIcon sx={{ fontSize: 30, color: '#9e9e9e' }} />
+                                            <Link underline='none' component={RouterLink}
+                                               to={`/singleProduct/${product?._id}`}
+                                            >
+                                                <ZoomInIcon sx={{ fontSize: 30, color: '#9e9e9e' }} />
+                                            </Link>
                                         </TableCell>
                                         <TableCell align="right">
                                             <FormControlLabel
@@ -120,7 +128,11 @@ const ProductList = ({ products, fetchAllProduct, searchProducts }) => {
                                         <TableCell align="right">{product.stock}</TableCell>
                                         <TableCell align="right">{product.status}</TableCell>
                                         <TableCell align="right">
-                                            <ZoomInIcon sx={{ fontSize: 30, color: '#9e9e9e' }} />
+                                            <Link underline='none' component={RouterLink}
+                                                to={`/singleProduct/${product?._id}`}
+                                            >
+                                                <ZoomInIcon sx={{ fontSize: 30, color: '#9e9e9e' }} />
+                                            </Link>
                                         </TableCell>
                                         <TableCell align="right">
                                             <FormControlLabel
